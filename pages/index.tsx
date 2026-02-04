@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import dynamic from "next/dynamic";
 
 /* ================= CONFIGURAZIONI ================= */
 const demolizioni = {
@@ -35,7 +35,7 @@ const lavorazioniAvanzate = {
 };
 
 /* ================= APP ================= */
-export default function App() {
+function App() {
   const [view, setView] = useState("list");
   const [storicoPreventivi, setStoricoPreventivi] = useState([]);
   const [preventivoCorrente, setPreventivoCorrente] = useState(null);
@@ -282,3 +282,4 @@ useEffect(() => {
     </div>
   );
 }
+export default dynamic(() => Promise.resolve(App), { ssr: false });
