@@ -3,8 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import dynamic from "next/dynamic";
 
 /* ================= CONFIGURAZIONI ================= */
 const demolizioni = {
@@ -164,16 +163,27 @@ useEffect(() => {
   };
 
   const exportPDF = async () => {
-    const el = document.getElementById("pdf-root");
-    if (!el) return;
-    const canvas = await html2canvas(el);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const w = pdf.internal.pageSize.getWidth();
-    const h = (canvas.height * w) / canvas.width;
-    pdf.addImage(imgData, "PNG", 0, 0, w, h);
-    pdf.save(`preventivo-${cliente || "cliente"}.pdf`);
-  };
+  if (typeof window === "undefined") return;
+
+  const el = document.getElementById("pdf-root");
+  if (!el) return;
+
+  // Import dinamico SOLO lato client (evita crash in build)
+  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+    import("html2canvas"),
+    import("jspdf"),
+  ]);
+
+  const canvas = await html2canvas(el);
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p", "mm", "a4");
+  const w = pdf.internal.pageSize.getWidth();
+  const h = (canvas.height * w) / canvas.width;
+
+  pdf.addImage(imgData, "PNG", 0, 0, w, h);
+  pdf.save(`preventivo-${cliente || "cliente"}.pdf`);
+};
 
   function renderSezione(titolo, lavorazioni) {
     return (
