@@ -42,9 +42,11 @@ export default function App() {
   const [preventivoCorrente, setPreventivoCorrente] = useState(null);
 
   useEffect(() => {
-    const salvati = localStorage.getItem("storicoPreventivi");
-    if (salvati) setStoricoPreventivi(JSON.parse(salvati));
-  }, []);
+  if (typeof window === "undefined") return;
+
+  const salvati = localStorage.getItem("storicoPreventivi");
+  if (salvati) setStoricoPreventivi(JSON.parse(salvati));
+}, []);
 
   const nuovoPreventivo = () => {
     setPreventivoCorrente(null);
@@ -149,7 +151,9 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
     const nuovo = { cliente, data: new Date().toLocaleString(), totale: calcolaTotale() };
     const agg = [nuovo, ...storicoPreventivi];
     setStoricoPreventivi(agg);
-    localStorage.setItem("storicoPreventivi", JSON.stringify(agg));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("storicoPreventivi", JSON.stringify(agg));
+    }
     tornaIndietro();
   };
 
