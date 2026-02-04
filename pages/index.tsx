@@ -110,7 +110,7 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
   const [ascensore, setAscensore] = useState(false);
   const [accessoStrada, setAccessoStrada] = useState(true);
 
-  const [selezioni, setSelezioni] = useState({});
+  const [selezioni, setSelezioni] = useState<Record<string, boolean>>({});
   const [prezziPersonalizzati, setPrezziPersonalizzati] = useState({});
 
 useEffect(() => {
