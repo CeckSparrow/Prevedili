@@ -112,10 +112,16 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
   const [accessoStrada, setAccessoStrada] = useState(true);
 
   const [selezioni, setSelezioni] = useState({});
-  const [prezziPersonalizzati, setPrezziPersonalizzati] = useState(() => {
-    const salvato = localStorage.getItem("listinoPrezziImpresa");
-    return salvato ? JSON.parse(salvato) : {};
-  });
+  const [prezziPersonalizzati, setPrezziPersonalizzati] = useState({});
+
+useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const salvato = window.localStorage.getItem("listinoPrezziImpresa");
+  if (salvato) {
+    setPrezziPersonalizzati(JSON.parse(salvato));
+  }
+}, []);
   const [mqLavorazioni, setMqLavorazioni] = useState({});
   const [mcLavorazioni, setMcLavorazioni] = useState({});
   const [prezzoMc, setPrezzoMc] = useState({});
