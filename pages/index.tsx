@@ -185,7 +185,17 @@ useEffect(() => {
   pdf.save(`preventivo-${cliente || "cliente"}.pdf`);
 };
 
-  function renderSezione(titolo, lavorazioni) {
+  type Lavorazione = {
+  label: string;
+  prezzo: number;
+  usaMqSpecifici?: boolean;
+  usaMc?: boolean;
+  aPezzo?: boolean;
+  aCorpo?: boolean;
+  prezzoEditabile?: boolean;
+  };
+
+function renderSezione(titolo: string, lavorazioni: Record<string, Lavorazione>) {
     return (
       <Card className="mb-4">
         <CardContent className="p-4 space-y-4">
