@@ -200,11 +200,13 @@ function renderSezione(titolo: string, lavorazioni: Record<string, Lavorazione>)
       <Card className="mb-4">
         <CardContent className="p-4 space-y-4">
           <h2 className="text-xl font-semibold">{titolo}</h2>
-          {Object.entries(lavorazioni).map(([key, item]) => (
+          {Object.entries(lavorazioni).map(([key, item]) => {
+          const lav = item as Lavorazione;
+          return (
             <div key={key} className="space-y-2 border-b pb-3">
               <div className="flex items-center gap-2">
                 <Checkbox checked={!!selezioni[key]} onCheckedChange={() => toggle(key)} />
-                <span className="font-medium">{item.label}</span>
+                <span className="font-medium">{lav.label}</span>
               </div>
 
               {selezioni[key] && (
