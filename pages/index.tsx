@@ -4,8 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { 
   FileText, 
   Plus, 
@@ -126,7 +124,7 @@ function App() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <strong className="text-lg text-slate-900">{p.cliente || "Cliente senza nome"}</strong>
-                        <Badge variant="outline" className="text-xs">{p.data}</Badge>
+                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">{p.data}</span>
                       </div>
                       <span className="text-2xl font-bold text-blue-600">€ {p.totale.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</span>
                     </div>
@@ -280,7 +278,9 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
               <div className="flex items-center gap-3">
                 <h3 className="text-xl font-bold">{titolo}</h3>
                 {numSelezionate > 0 && (
-                  <Badge className="bg-blue-600">{numSelezionate} selezionate</Badge>
+                  <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium">
+                    {numSelezionate} selezionate
+                  </span>
                 )}
               </div>
               {isAperta ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -558,4 +558,3 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
 }
 
 export default dynamic(() => Promise.resolve(App), { ssr: false });
-
