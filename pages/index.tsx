@@ -4,19 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  FileText, 
-  Plus, 
-  Download, 
-  Save, 
-  ArrowLeft, 
-  Copy, 
-  Trash2,
-  Building2,
-  Calculator,
-  ChevronDown,
-  ChevronUp
-} from "lucide-react";
 
 /* ================= CONFIGURAZIONI ================= */
 const demolizioni = {
@@ -90,14 +77,12 @@ function App() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-4xl font-bold text-slate-900 flex items-center gap-3">
-              <Building2 className="w-10 h-10 text-blue-600" />
-              Preventivi Edili
+              🏗️ Preventivi Edili
             </h1>
             <p className="text-slate-600 mt-2">Gestisci i tuoi preventivi in modo semplice e veloce</p>
           </div>
           <Button onClick={nuovoPreventivo} size="lg" className="gap-2 bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-5 h-5" />
-            Nuovo preventivo
+            + Nuovo preventivo
           </Button>
         </div>
 
@@ -105,12 +90,11 @@ function App() {
         <Card className="shadow-lg">
           <CardContent className="p-6 space-y-4">
             <h2 className="flex items-center gap-2 text-2xl font-bold">
-              <FileText className="w-6 h-6 text-blue-600" />
-              Storico preventivi
+              📄 Storico preventivi
             </h2>
             {storicoPreventivi.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                <div className="text-6xl mb-4">📋</div>
                 <p className="text-slate-500 text-lg">Nessun preventivo salvato</p>
                 <p className="text-slate-400 text-sm mt-2">Crea il tuo primo preventivo per iniziare</p>
               </div>
@@ -130,12 +114,10 @@ function App() {
                     </div>
                     <div className="flex gap-2 flex-wrap">
                       <Button size="sm" onClick={() => apriPreventivo(p)} className="gap-1">
-                        <FileText className="w-4 h-4" />
-                        Apri
+                        📄 Apri
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => duplicaPreventivo(p)} className="gap-1">
-                        <Copy className="w-4 h-4" />
-                        Duplica
+                        📋 Duplica
                       </Button>
                       <Button 
                         size="sm" 
@@ -143,7 +125,7 @@ function App() {
                         onClick={() => eliminaPreventivo(i)}
                         className="gap-1 text-red-600 hover:bg-red-50"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        🗑️
                       </Button>
                     </div>
                   </div>
@@ -283,7 +265,7 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
                   </span>
                 )}
               </div>
-              {isAperta ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              <span className="text-2xl">{isAperta ? '▲' : '▼'}</span>
             </div>
           </div>
         
@@ -417,8 +399,7 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
             onClick={tornaIndietro}
             className="gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Torna allo storico
+            ← Torna allo storico
           </Button>
           
           <div className="flex gap-2 flex-wrap">
@@ -427,15 +408,13 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
               onClick={exportPDF}
               className="gap-2"
             >
-              <Download className="w-4 h-4" />
-              Esporta PDF
+              📥 Esporta PDF
             </Button>
             <Button 
               onClick={salva}
               className="gap-2 bg-blue-600 hover:bg-blue-700"
             >
-              <Save className="w-4 h-4" />
-              Salva preventivo
+              💾 Salva preventivo
             </Button>
           </div>
         </div>
@@ -444,8 +423,7 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
         <Card className="shadow-lg">
           <CardContent className="p-6 space-y-4">
             <h2 className="flex items-center gap-2 text-2xl font-bold mb-4">
-              <Building2 className="w-6 h-6 text-blue-600" />
-              Dati immobile
+              🏗️ Dati immobile
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -521,7 +499,7 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="flex items-center gap-3">
-                  <Calculator className="w-8 h-8 text-blue-600" />
+                  <span className="text-4xl">🧮</span>
                   <div>
                     <p className="text-sm text-slate-600">Totale preventivo</p>
                     <strong className="text-3xl font-bold text-blue-600">
@@ -536,16 +514,14 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
                     size="lg"
                     className="gap-2"
                   >
-                    <Download className="w-5 h-5" />
-                    Esporta PDF
+                    📥 Esporta PDF
                   </Button>
                   <Button 
                     onClick={salva}
                     size="lg"
                     className="gap-2 bg-blue-600 hover:bg-blue-700"
                   >
-                    <Save className="w-5 h-5" />
-                    Salva preventivo
+                    💾 Salva preventivo
                   </Button>
                 </div>
               </div>
