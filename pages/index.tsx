@@ -5,6 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 
+// Import font moderno
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+});
+
 /* ================= CONFIGURAZIONI ================= */
 const demolizioni = {
   demolizioneMuratura: { label: "Demolizione muratura", prezzo: 25, usaMqSpecifici: true },
@@ -71,34 +80,39 @@ function App() {
   };
 
   return view === "list" ? (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 ${inter.className}`}>
       <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900 flex items-center gap-3">
+            <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight mb-2">
               🏗️ Preventivi Edili
             </h1>
-            <p className="text-slate-600 mt-2">Gestisci i tuoi preventivi in modo semplice e veloce</p>
+            <p className="text-lg text-slate-500">Crea preventivi professionali in pochi click</p>
           </div>
           <div className="flex gap-3">
             <Button 
               variant="outline" 
               onClick={() => setView('listino')}
               size="lg"
+              className="rounded-full font-semibold"
             >
               💰 Listino impresa
             </Button>
-            <Button onClick={nuovoPreventivo} size="lg" className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Button 
+              onClick={nuovoPreventivo} 
+              size="lg" 
+              className="gap-2 bg-blue-600 hover:bg-blue-700 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
+            >
               + Nuovo preventivo
             </Button>
           </div>
         </div>
 
         {/* Storico */}
-        <Card className="shadow-lg">
+        <Card className="shadow-xl rounded-2xl border-0">
           <CardContent className="p-6 space-y-4">
-            <h2 className="flex items-center gap-2 text-2xl font-bold">
+            <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-800">
               📄 Storico preventivi
             </h2>
             {storicoPreventivi.length === 0 ? (
@@ -126,17 +140,26 @@ function App() {
                       </div>
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                      <Button size="sm" onClick={() => apriPreventivo(p)} className="gap-1">
+                      <Button 
+                        size="sm" 
+                        onClick={() => apriPreventivo(p)} 
+                        className="gap-1 rounded-full bg-blue-600 hover:bg-blue-700 font-medium"
+                      >
                         📄 Apri
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => duplicaPreventivo(p)} className="gap-1">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => duplicaPreventivo(p)} 
+                        className="gap-1 rounded-full font-medium"
+                      >
                         📋 Duplica
                       </Button>
                       <Button 
                         size="sm" 
                         variant="outline" 
                         onClick={() => eliminaPreventivo(i)}
-                        className="gap-1 text-red-600 hover:bg-red-50"
+                        className="gap-1 text-red-600 hover:bg-red-50 rounded-full font-medium"
                       >
                         🗑️
                       </Button>
@@ -205,17 +228,13 @@ function ListinoImpresa({ tornaIndietro }) {
 
   function renderSezioneListino(titolo: string, lavorazioni: Record<string, Lavorazione>) {
     return (
-      <Card className="shadow-md">
+      <Card className="shadow-lg rounded-2xl border-0">
         <CardContent className="p-6">
-          <h3 className="text-xl font-bold mb-4 text-slate-900">{titolo}</h3>
+          <h3 className="text-2xl font-bold mb-5 text-slate-800">{titolo}</h3>
           <div className="space-y-3">
             {Object.entries(lavorazioni).map(([key, item]) => (
-              <div key={key} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center p-3 rounded-lg border border-slate-200 hover:border-blue-300 transition-colors">
+              <div key={key} className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center p-3 rounded-lg border border-slate-200 hover:border-blue-300 transition-colors">
                 <span className="font-medium text-slate-700">{item.label}</span>
-                <span className="text-sm text-slate-500">
-                  Default: €{item.prezzo}
-                  {item.usaMc ? '/m³' : item.aPezzo ? '/pz' : item.aCorpo ? '' : '/m²'}
-                </span>
                 <div>
                   <Input
                     type="number"
@@ -234,17 +253,21 @@ function ListinoImpresa({ tornaIndietro }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 ${inter.className}`}>
       <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900 flex items-center gap-3">
+            <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight mb-2">
               💰 Listino Prezzi Impresa
             </h1>
-            <p className="text-slate-600 mt-2">Configura i prezzi predefiniti per i tuoi preventivi</p>
+            <p className="text-lg text-slate-500">Configura i prezzi predefiniti per i tuoi preventivi</p>
           </div>
-          <Button variant="outline" onClick={tornaIndietro}>
+          <Button 
+            variant="outline" 
+            onClick={tornaIndietro}
+            className="rounded-full font-semibold"
+          >
             ← Torna indietro
           </Button>
         </div>
@@ -273,10 +296,18 @@ function ListinoImpresa({ tornaIndietro }) {
                   Modifica i prezzi e salva per applicarli ai nuovi preventivi
                 </p>
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={resetPrezzi} className="text-red-600">
+                  <Button 
+                    variant="outline" 
+                    onClick={resetPrezzi} 
+                    className="text-red-600 rounded-full font-semibold"
+                  >
                     🔄 Ripristina default
                   </Button>
-                  <Button onClick={salvaPrezzi} size="lg" className="bg-blue-600 hover:bg-blue-700">
+                  <Button 
+                    onClick={salvaPrezzi} 
+                    size="lg" 
+                    className="bg-blue-600 hover:bg-blue-700 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
+                  >
                     💾 Salva listino
                   </Button>
                 </div>
@@ -393,15 +424,15 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
     const numSelezionate = Object.keys(lavorazioni).filter(k => selezioni[k]).length;
 
     return (
-      <Card className="shadow-md hover:shadow-lg transition-shadow">
+      <Card className="shadow-lg hover:shadow-xl transition-shadow rounded-2xl border-0">
         <CardContent className="p-0">
           <div 
-            className="p-6 cursor-pointer hover:bg-slate-50 transition-colors border-b"
+            className="p-6 cursor-pointer hover:bg-slate-50 transition-colors border-b rounded-t-2xl"
             onClick={() => toggleSezione(sezioneKey)}
           >
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <h3 className="text-xl font-bold">{titolo}</h3>
+                <h3 className="text-2xl font-bold text-slate-800">{titolo}</h3>
                 {numSelezionate > 0 && (
                   <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium">
                     {numSelezionate} selezionate
@@ -429,10 +460,6 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
                     onCheckedChange={() => toggle(key)}
                   />
                   <span className="font-medium text-slate-900">{item.label}</span>
-                  <span className="text-sm text-slate-500 ml-auto">
-                    €{item.prezzo}
-                    {item.usaMc ? '/m³' : item.aPezzo ? '/pz' : item.aCorpo ? '' : '/m²'}
-                  </span>
                 </div>
 
                 {selezioni[key] && (
@@ -532,7 +559,7 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 ${inter.className}`}>
       <div id="pdf-root" className="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
         {/* Header con navigazione */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -548,13 +575,13 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
             <Button 
               variant="outline" 
               onClick={exportPDF}
-              className="gap-2"
+              className="gap-2 rounded-full font-semibold"
             >
               📥 Esporta PDF
             </Button>
             <Button 
               onClick={salva}
-              className="gap-2 bg-blue-600 hover:bg-blue-700"
+              className="gap-2 bg-blue-600 hover:bg-blue-700 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
             >
               💾 Salva preventivo
             </Button>
@@ -562,9 +589,9 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
         </div>
 
         {/* Dati immobile */}
-        <Card className="shadow-lg">
+        <Card className="shadow-xl rounded-2xl border-0">
           <CardContent className="p-6 space-y-4">
-            <h2 className="flex items-center gap-2 text-2xl font-bold mb-4">
+            <h2 className="flex items-center gap-2 text-2xl font-bold mb-4 text-slate-800">
               🏗️ Dati immobile
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -635,14 +662,14 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
 
         {/* Totale fisso in basso */}
         <div className="sticky bottom-4">
-          <Card className="shadow-2xl border-2 border-blue-300 bg-gradient-to-r from-white to-blue-50">
+          <Card className="shadow-2xl border-0 bg-gradient-to-r from-white to-blue-50 rounded-2xl">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="flex items-center gap-4">
                   <span className="text-5xl">🧮</span>
                   <div>
-                    <p className="text-sm font-medium text-slate-600 mb-1">Totale preventivo</p>
-                    <strong className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                    <p className="text-sm font-semibold text-slate-600 mb-1">Totale preventivo</p>
+                    <strong className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
                       €{calcolaTotale().toLocaleString('it-IT', { minimumFractionDigits: 2 })}
                     </strong>
                   </div>
@@ -652,14 +679,14 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
                     variant="outline" 
                     onClick={exportPDF}
                     size="lg"
-                    className="gap-2"
+                    className="gap-2 rounded-full font-semibold"
                   >
                     📥 Esporta PDF
                   </Button>
                   <Button 
                     onClick={salva}
                     size="lg"
-                    className="gap-2 bg-blue-600 hover:bg-blue-700"
+                    className="gap-2 bg-blue-600 hover:bg-blue-700 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
                   >
                     💾 Salva preventivo
                   </Button>
