@@ -284,7 +284,6 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
                   <Checkbox 
                     checked={!!selezioni[key]} 
                     onCheckedChange={() => toggle(key)}
-                    className="data-[state=checked]:bg-blue-600"
                   />
                   <span className="font-medium text-slate-900">{item.label}</span>
                   <span className="text-sm text-slate-500 ml-auto">
@@ -469,7 +468,6 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
                   <Checkbox 
                     checked={ascensore} 
                     onCheckedChange={(v) => setAscensore(!!v)}
-                    className="data-[state=checked]:bg-blue-600"
                   />
                   <span className="text-sm font-medium text-slate-700">Ascensore presente</span>
                 </label>
@@ -479,7 +477,6 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
                   <Checkbox 
                     checked={accessoStrada} 
                     onCheckedChange={(v) => setAccessoStrada(!!v)}
-                    className="data-[state=checked]:bg-blue-600"
                   />
                   <span className="text-sm font-medium text-slate-700">Accesso strada</span>
                 </label>
