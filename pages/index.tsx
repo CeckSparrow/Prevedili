@@ -81,9 +81,18 @@ function App() {
             </h1>
             <p className="text-slate-600 mt-2">Gestisci i tuoi preventivi in modo semplice e veloce</p>
           </div>
-          <Button onClick={nuovoPreventivo} size="lg" className="gap-2 bg-blue-600 hover:bg-blue-700">
-            + Nuovo preventivo
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setView('listino')}
+              size="lg"
+            >
+              💰 Listino impresa
+            </Button>
+            <Button onClick={nuovoPreventivo} size="lg" className="gap-2 bg-blue-600 hover:bg-blue-700">
+              + Nuovo preventivo
+            </Button>
+          </div>
         </div>
 
         {/* Storico */}
@@ -103,14 +112,18 @@ function App() {
                 {storicoPreventivi.map((p, i) => (
                   <div 
                     key={i} 
-                    className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-4 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all"
+                    className="group relative flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-5 rounded-xl border-2 border-slate-200 hover:border-blue-400 hover:shadow-lg bg-white transition-all duration-200"
                   >
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <strong className="text-lg text-slate-900">{p.cliente || "Cliente senza nome"}</strong>
-                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">{p.data}</span>
+                      <div className="flex items-center gap-2 mb-2">
+                        <strong className="text-xl text-slate-900">{p.cliente || "Cliente senza nome"}</strong>
+                        <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-medium">{p.data}</span>
                       </div>
-                      <span className="text-2xl font-bold text-blue-600">€ {p.totale.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                          €{p.totale.toLocaleString('it-IT', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex gap-2 flex-wrap">
                       <Button size="sm" onClick={() => apriPreventivo(p)} className="gap-1">
@@ -136,6 +149,8 @@ function App() {
         </Card>
       </div>
     </div>
+  ) : view === "listino" ? (
+    <ListinoImpresa tornaIndietro={() => setView("list")} />
   ) : (
     <EditorPreventivo
       storicoPreventivi={storicoPreventivi}
@@ -143,6 +158,134 @@ function App() {
       preventivoCorrente={preventivoCorrente}
       tornaIndietro={() => setView("list")}
     />
+  );
+}
+
+/* ================= LISTINO IMPRESA ================= */
+function ListinoImpresa({ tornaIndietro }) {
+  const [prezzi, setPrezzi] = useState({});
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const salvato = localStorage.getItem("listinoPrezziImpresa");
+    if (salvato) {
+      setPrezzi(JSON.parse(salvato));
+    }
+  }, []);
+
+  const salvaPrezzi = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("listinoPrezziImpresa", JSON.stringify(prezzi));
+      alert("✅ Listino salvato con successo!");
+    }
+  };
+
+  const resetPrezzi = () => {
+    if (confirm("⚠️ Vuoi ripristinare tutti i prezzi predefiniti?")) {
+      setPrezzi({});
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("listinoPrezziImpresa");
+      }
+    }
+  };
+
+  const cambiaPrezzo = (key, value) => {
+    setPrezzi({ ...prezzi, [key]: value });
+  };
+
+  type Lavorazione = {
+    label: string;
+    prezzo: number;
+    usaMqSpecifici?: boolean;
+    usaMc?: boolean;
+    aPezzo?: boolean;
+    aCorpo?: boolean;
+    prezzoEditabile?: boolean;
+  };
+
+  function renderSezioneListino(titolo: string, lavorazioni: Record<string, Lavorazione>) {
+    return (
+      <Card className="shadow-md">
+        <CardContent className="p-6">
+          <h3 className="text-xl font-bold mb-4 text-slate-900">{titolo}</h3>
+          <div className="space-y-3">
+            {Object.entries(lavorazioni).map(([key, item]) => (
+              <div key={key} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center p-3 rounded-lg border border-slate-200 hover:border-blue-300 transition-colors">
+                <span className="font-medium text-slate-700">{item.label}</span>
+                <span className="text-sm text-slate-500">
+                  Default: €{item.prezzo}
+                  {item.usaMc ? '/m³' : item.aPezzo ? '/pz' : item.aCorpo ? '' : '/m²'}
+                </span>
+                <div>
+                  <Input
+                    type="number"
+                    placeholder={`€${item.prezzo}`}
+                    value={prezzi[key] ?? ''}
+                    onChange={(e) => cambiaPrezzo(key, e.target.value ? +e.target.value : undefined)}
+                    className="border-slate-300"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-slate-900 flex items-center gap-3">
+              💰 Listino Prezzi Impresa
+            </h1>
+            <p className="text-slate-600 mt-2">Configura i prezzi predefiniti per i tuoi preventivi</p>
+          </div>
+          <Button variant="outline" onClick={tornaIndietro}>
+            ← Torna indietro
+          </Button>
+        </div>
+
+        {/* Info */}
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="p-4">
+            <p className="text-sm text-blue-900">
+              💡 <strong>Suggerimento:</strong> I prezzi impostati qui saranno usati come default per tutti i nuovi preventivi. 
+              Lascia vuoto per usare il prezzo predefinito del sistema.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Sezioni */}
+        {renderSezioneListino("Demolizioni", demolizioni)}
+        {renderSezioneListino("Lavorazioni Principali", lavorazioniBase)}
+        {renderSezioneListino("Voci Avanzate", lavorazioniAvanzate)}
+
+        {/* Pulsanti azione */}
+        <div className="sticky bottom-4">
+          <Card className="shadow-2xl border-2 border-blue-200 bg-white">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <p className="text-sm text-slate-600">
+                  Modifica i prezzi e salva per applicarli ai nuovi preventivi
+                </p>
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={resetPrezzi} className="text-red-600">
+                    🔄 Ripristina default
+                  </Button>
+                  <Button onClick={salvaPrezzi} size="lg" className="bg-blue-600 hover:bg-blue-700">
+                    💾 Salva listino
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -274,10 +417,10 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
             {Object.entries(lavorazioni).map(([key, item]) => (
               <div 
                 key={key} 
-                className={`space-y-3 p-4 rounded-lg border transition-all ${
+                className={`space-y-3 p-5 rounded-xl border-2 transition-all duration-200 ${
                   selezioni[key] 
-                    ? 'border-blue-300 bg-blue-50/50' 
-                    : 'border-slate-200 hover:border-slate-300'
+                    ? 'border-blue-400 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-md' 
+                    : 'border-slate-200 hover:border-slate-300 bg-white'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -492,15 +635,15 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
 
         {/* Totale fisso in basso */}
         <div className="sticky bottom-4">
-          <Card className="shadow-2xl border-2 border-blue-200 bg-white">
+          <Card className="shadow-2xl border-2 border-blue-300 bg-gradient-to-r from-white to-blue-50">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-4xl">🧮</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-5xl">🧮</span>
                   <div>
-                    <p className="text-sm text-slate-600">Totale preventivo</p>
-                    <strong className="text-3xl font-bold text-blue-600">
-                      € {calcolaTotale().toLocaleString('it-IT', { minimumFractionDigits: 2 })}
+                    <p className="text-sm font-medium text-slate-600 mb-1">Totale preventivo</p>
+                    <strong className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                      €{calcolaTotale().toLocaleString('it-IT', { minimumFractionDigits: 2 })}
                     </strong>
                   </div>
                 </div>
