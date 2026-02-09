@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -105,13 +105,11 @@ function App() {
 
         {/* Storico */}
         <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
+          <CardContent className="p-6 space-y-4">
+            <h2 className="flex items-center gap-2 text-2xl font-bold">
               <FileText className="w-6 h-6 text-blue-600" />
               Storico preventivi
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+            </h2>
             {storicoPreventivi.length === 0 ? (
               <div className="text-center py-12">
                 <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
@@ -273,23 +271,24 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
 
     return (
       <Card className="shadow-md hover:shadow-lg transition-shadow">
-        <CardHeader 
-          className="cursor-pointer hover:bg-slate-50 transition-colors"
-          onClick={() => toggleSezione(sezioneKey)}
-        >
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <CardTitle className="text-xl">{titolo}</CardTitle>
-              {numSelezionate > 0 && (
-                <Badge className="bg-blue-600">{numSelezionate} selezionate</Badge>
-              )}
+        <CardContent className="p-0">
+          <div 
+            className="p-6 cursor-pointer hover:bg-slate-50 transition-colors border-b"
+            onClick={() => toggleSezione(sezioneKey)}
+          >
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <h3 className="text-xl font-bold">{titolo}</h3>
+                {numSelezionate > 0 && (
+                  <Badge className="bg-blue-600">{numSelezionate} selezionate</Badge>
+                )}
+              </div>
+              {isAperta ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
             </div>
-            {isAperta ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </div>
-        </CardHeader>
         
         {isAperta && (
-          <CardContent className="space-y-4 pt-0">
+          <div className="p-6 space-y-4">
             {Object.entries(lavorazioni).map(([key, item]) => (
               <div 
                 key={key} 
@@ -401,8 +400,9 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
                 )}
               </div>
             ))}
-          </CardContent>
+          </div>
         )}
+        </CardContent>
       </Card>
     );
   }
@@ -442,13 +442,11 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
 
         {/* Dati immobile */}
         <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
+          <CardContent className="p-6 space-y-4">
+            <h2 className="flex items-center gap-2 text-2xl font-bold mb-4">
               <Building2 className="w-6 h-6 text-blue-600" />
               Dati immobile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 block mb-2">
@@ -560,3 +558,4 @@ function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoC
 }
 
 export default dynamic(() => Promise.resolve(App), { ssr: false });
+
