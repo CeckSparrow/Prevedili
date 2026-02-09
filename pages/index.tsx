@@ -1,9 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { 
+  FileText, 
+  Plus, 
+  Download, 
+  Save, 
+  ArrowLeft, 
+  Copy, 
+  Trash2,
+  Building2,
+  Calculator,
+  ChevronDown,
+  ChevronUp
+} from "lucide-react";
 
 /* ================= CONFIGURAZIONI ================= */
 const demolizioni = {
@@ -34,51 +49,15 @@ const lavorazioniAvanzate = {
   urgenza: { label: "Lavoro urgente", prezzo: 10 },
 };
 
-/* ================= TIPI ================= */
-type Lavorazione = {
-  label: string;
-  prezzo: number;
-  usaMqSpecifici?: boolean;
-  usaMc?: boolean;
-  aPezzo?: boolean;
-  aCorpo?: boolean;
-  prezzoEditabile?: boolean;
-};
-
-type Preventivo = {
-  cliente: string;
-  data: string;
-  totale: number;
-  // Volutamente semplice: in futuro possiamo salvare anche dettagli (selezioni, quantità, prezzi...)
-};
-
-/* ================= UI HELPERS ================= */
-function Badge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs text-slate-600 bg-white">
-      {children}
-    </span>
-  );
-}
-
-function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
-  return (
-    <div className="space-y-1">
-      <div className="text-sm font-semibold text-slate-900">{title}</div>
-      {subtitle ? <div className="text-xs text-slate-500">{subtitle}</div> : null}
-    </div>
-  );
-}
-
 /* ================= APP ================= */
 function App() {
-  const [view, setView] = useState<"list" | "edit" | "listino">("list");
-  const [storicoPreventivi, setStoricoPreventivi] = useState<Preventivo[]>([]);
-  const [preventivoCorrente, setPreventivoCorrente] = useState<Preventivo | null>(null);
+  const [view, setView] = useState("list");
+  const [storicoPreventivi, setStoricoPreventivi] = useState([]);
+  const [preventivoCorrente, setPreventivoCorrente] = useState(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const salvati = window.localStorage.getItem("storicoPreventivi");
+    const salvati = localStorage.getItem("storicoPreventivi");
     if (salvati) setStoricoPreventivi(JSON.parse(salvati));
   }, []);
 
@@ -87,126 +66,96 @@ function App() {
     setView("edit");
   };
 
-  const apriPreventivo = (p: Preventivo) => {
+  const apriPreventivo = (p) => {
     setPreventivoCorrente(p);
     setView("edit");
   };
 
-  const duplicaPreventivo = (p: Preventivo) => {
-    const copia = { ...p, data: "" };
+  const duplicaPreventivo = (p) => {
+    const copia = { ...p, data: null };
     setPreventivoCorrente(copia);
     setView("edit");
   };
 
-  // Nota: hai il bottone “Listino impresa” ma qui la vista listino non è implementata.
-  // Mantengo la UX senza rompere: mostro un “placeholder” elegante.
-  const renderListinoPlaceholder = () => (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-5xl p-4 sm:p-6 space-y-6">
-        <div className="flex items-center justify-between">
+  const eliminaPreventivo = (index) => {
+    const nuovoStorico = storicoPreventivi.filter((_, i) => i !== index);
+    setStoricoPreventivi(nuovoStorico);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("storicoPreventivi", JSON.stringify(nuovoStorico));
+    }
+  };
+
+  return view === "list" ? (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">
-              Listino impresa
+            <h1 className="text-4xl font-bold text-slate-900 flex items-center gap-3">
+              <Building2 className="w-10 h-10 text-blue-600" />
+              Preventivi Edili
             </h1>
-            <p className="text-sm text-slate-500">Imposta i prezzi di default (funzione da rifinire).</p>
+            <p className="text-slate-600 mt-2">Gestisci i tuoi preventivi in modo semplice e veloce</p>
           </div>
-          <Button variant="outline" onClick={() => setView("list")}>
-            ← Torna allo storico
+          <Button onClick={nuovoPreventivo} size="lg" className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-5 h-5" />
+            Nuovo preventivo
           </Button>
         </div>
 
-        <Card className="overflow-hidden">
-          <CardContent className="p-6 space-y-3">
-            <div className="text-sm text-slate-700">
-              In questa versione stiamo usando i prezzi salvati in <Badge>localStorage</Badge>.
-            </div>
-            <div className="text-sm text-slate-500">
-              Se vuoi, nel prossimo step ti preparo una schermata “Listino impresa” completa e ben fatta, collegata a
-              queste stesse lavorazioni.
-            </div>
-            <div className="pt-2">
-              <Button onClick={() => setView("edit")}>Vai a un preventivo</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-
-  if (view === "listino") return renderListinoPlaceholder();
-
-  return view === "list" ? (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-5xl p-4 sm:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">
-              Preventivi Edili
-            </h1>
-            <p className="text-sm text-slate-500">
-              Storico, duplicazione e PDF in un flusso semplice.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setView("listino")}>
-              Listino impresa
-            </Button>
-            <Button onClick={nuovoPreventivo}>+ Nuovo preventivo</Button>
-          </div>
-        </div>
-
         {/* Storico */}
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <div className="p-4 sm:p-5 border-b bg-white">
-              <SectionHeader
-                title="Storico preventivi"
-                subtitle="Apri un preventivo esistente oppure duplicalo per partire più veloce."
-              />
-            </div>
-
-            <div className="bg-white">
-              {storicoPreventivi.length === 0 ? (
-                <div className="p-6 text-sm text-slate-500">
-                  Nessun preventivo salvato. Crea il primo con <Badge>Nuovo preventivo</Badge>.
-                </div>
-              ) : (
-                <div className="divide-y">
-                  {storicoPreventivi.map((p, i) => (
-                    <div key={i} className="p-4 sm:p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <div className="font-semibold text-slate-900 truncate">
-                            {p.cliente || "Cliente"}
-                          </div>
-                          <Badge>€ {Number(p.totale || 0).toLocaleString()}</Badge>
-                        </div>
-                        <div className="text-xs text-slate-500 mt-1">
-                          {p.data || "—"}
-                        </div>
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <FileText className="w-6 h-6 text-blue-600" />
+              Storico preventivi
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {storicoPreventivi.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500 text-lg">Nessun preventivo salvato</p>
+                <p className="text-slate-400 text-sm mt-2">Crea il tuo primo preventivo per iniziare</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {storicoPreventivi.map((p, i) => (
+                  <div 
+                    key={i} 
+                    className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-4 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <strong className="text-lg text-slate-900">{p.cliente || "Cliente senza nome"}</strong>
+                        <Badge variant="outline" className="text-xs">{p.data}</Badge>
                       </div>
-
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => apriPreventivo(p)}>
-                          Apri
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => duplicaPreventivo(p)}>
-                          Duplica
-                        </Button>
-                      </div>
+                      <span className="text-2xl font-bold text-blue-600">€ {p.totale.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    <div className="flex gap-2 flex-wrap">
+                      <Button size="sm" onClick={() => apriPreventivo(p)} className="gap-1">
+                        <FileText className="w-4 h-4" />
+                        Apri
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => duplicaPreventivo(p)} className="gap-1">
+                        <Copy className="w-4 h-4" />
+                        Duplica
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => eliminaPreventivo(i)}
+                        className="gap-1 text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
-
-        {/* Footer note */}
-        <div className="text-xs text-slate-500">
-          Suggerimento: duplica un preventivo simile e modifica solo le lavorazioni che cambiano.
-        </div>
       </div>
     </div>
   ) : (
@@ -220,47 +169,49 @@ function App() {
 }
 
 /* ================= EDITOR PREVENTIVO ================= */
-function EditorPreventivo({
-  storicoPreventivi,
-  setStoricoPreventivi,
-  preventivoCorrente,
-  tornaIndietro,
-}: {
-  storicoPreventivi: Preventivo[];
-  setStoricoPreventivi: (v: Preventivo[]) => void;
-  preventivoCorrente: Preventivo | null;
-  tornaIndietro: () => void;
-}) {
+function EditorPreventivo({ storicoPreventivi, setStoricoPreventivi, preventivoCorrente, tornaIndietro }) {
   const [cliente, setCliente] = useState(preventivoCorrente?.cliente || "");
-  const [superficieCasa, setSuperficieCasa] = useState<number>(100);
-  const [piano, setPiano] = useState<number>(1);
-  const [ascensore, setAscensore] = useState<boolean>(false);
-  const [accessoStrada, setAccessoStrada] = useState<boolean>(true);
+  const [superficieCasa, setSuperficieCasa] = useState(100);
+  const [piano, setPiano] = useState(1);
+  const [ascensore, setAscensore] = useState(false);
+  const [accessoStrada, setAccessoStrada] = useState(true);
 
   const [selezioni, setSelezioni] = useState<Record<string, boolean>>({});
-  const [prezziPersonalizzati, setPrezziPersonalizzati] = useState<Record<string, number>>({});
-  const [mqLavorazioni, setMqLavorazioni] = useState<Record<string, number>>({});
-  const [mcLavorazioni, setMcLavorazioni] = useState<Record<string, number>>({});
-  const [prezzoMc, setPrezzoMc] = useState<Record<string, number>>({});
+  const [prezziPersonalizzati, setPrezziPersonalizzati] = useState({});
+  const [mqLavorazioni, setMqLavorazioni] = useState({});
+  const [mcLavorazioni, setMcLavorazioni] = useState({});
+  const [prezzoMc, setPrezzoMc] = useState({});
+
+  // Stati per sezioni collassabili
+  const [sezioniAperte, setSezioniAperte] = useState({
+    demolizioni: true,
+    lavorazioni: true,
+    avanzate: true
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const salvato = window.localStorage.getItem("listinoPrezziImpresa");
-    if (salvato) setPrezziPersonalizzati(JSON.parse(salvato));
+    if (salvato) {
+      setPrezziPersonalizzati(JSON.parse(salvato));
+    }
   }, []);
 
-  const toggle = (k: string) => setSelezioni({ ...selezioni, [k]: !selezioni[k] });
-  const cambiaPrezzo = (k: string, v: number) => setPrezziPersonalizzati({ ...prezziPersonalizzati, [k]: v });
-  const cambiaMq = (k: string, v: number) => setMqLavorazioni({ ...mqLavorazioni, [k]: v });
-  const cambiaMc = (k: string, v: number) => setMcLavorazioni({ ...mcLavorazioni, [k]: v });
-  const cambiaPrezzoMc = (k: string, v: number) => setPrezzoMc({ ...prezzoMc, [k]: v });
+  const toggle = (k) => setSelezioni({ ...selezioni, [k]: !selezioni[k] });
+  const cambiaPrezzo = (k, v) => setPrezziPersonalizzati({ ...prezziPersonalizzati, [k]: v });
+  const cambiaMq = (k, v) => setMqLavorazioni({ ...mqLavorazioni, [k]: v });
+  const cambiaMc = (k, v) => setMcLavorazioni({ ...mcLavorazioni, [k]: v });
+  const cambiaPrezzoMc = (k, v) => setPrezzoMc({ ...prezzoMc, [k]: v });
 
-  const tutte = useMemo(() => ({ ...demolizioni, ...lavorazioniBase, ...lavorazioniAvanzate }), []);
+  const toggleSezione = (sezione) => {
+    setSezioniAperte({ ...sezioniAperte, [sezione]: !sezioniAperte[sezione] });
+  };
 
   const calcolaTotale = () => {
+    const tutte = { ...demolizioni, ...lavorazioniBase, ...lavorazioniAvanzate };
     let tot = Object.keys(selezioni).reduce((s, k) => {
       if (!selezioni[k]) return s;
-      const v: any = (tutte as any)[k];
+      const v = tutte[k];
       let p = prezziPersonalizzati[k] ?? v.prezzo;
       if (v.usaMc) p = prezzoMc[k] ?? p;
       if (v.aCorpo || v.prezzoEditabile) return s + p;
@@ -270,35 +221,25 @@ function EditorPreventivo({
     }, 0);
 
     if (!ascensore) tot *= 1.1;
-
-    // Coefficienti su carico e scarico (solo se selezionato)
-    if (selezioni["caricoScarico"]) {
-      const c = 1 + 0.02 * piano + (!accessoStrada ? 0.2 : 0);
+    if (selezioni.caricoScarico) {
+      let c = 1 + 0.02 * piano + (!accessoStrada ? 0.2 : 0);
       tot += (lavorazioniBase.caricoScarico.prezzo * superficieCasa * c) - (lavorazioniBase.caricoScarico.prezzo * superficieCasa);
     }
-
     return tot;
   };
 
-  const totale = useMemo(() => calcolaTotale(), [selezioni, prezziPersonalizzati, mqLavorazioni, mcLavorazioni, prezzoMc, superficieCasa, piano, ascensore, accessoStrada]);
-
   const salva = () => {
-    const nuovo: Preventivo = {
-      cliente,
-      data: new Date().toLocaleString(),
-      totale,
-    };
+    const nuovo = { cliente, data: new Date().toLocaleString('it-IT'), totale: calcolaTotale() };
     const agg = [nuovo, ...storicoPreventivi];
     setStoricoPreventivi(agg);
     if (typeof window !== "undefined") {
-      window.localStorage.setItem("storicoPreventivi", JSON.stringify(agg));
+      localStorage.setItem("storicoPreventivi", JSON.stringify(agg));
     }
     tornaIndietro();
   };
 
   const exportPDF = async () => {
     if (typeof window === "undefined") return;
-
     const el = document.getElementById("pdf-root");
     if (!el) return;
 
@@ -309,249 +250,309 @@ function EditorPreventivo({
 
     const canvas = await html2canvas(el);
     const imgData = canvas.toDataURL("image/png");
-
     const pdf = new jsPDF("p", "mm", "a4");
     const w = pdf.internal.pageSize.getWidth();
     const h = (canvas.height * w) / canvas.width;
-
     pdf.addImage(imgData, "PNG", 0, 0, w, h);
     pdf.save(`preventivo-${cliente || "cliente"}.pdf`);
   };
 
-  function tipoBadge(item: Lavorazione) {
-    if (item.aCorpo) return "a corpo";
-    if (item.aPezzo) return "a pezzo";
-    if (item.usaMc) return "€/m³";
-    return "€/m²";
-  }
+  type Lavorazione = {
+    label: string;
+    prezzo: number;
+    usaMqSpecifici?: boolean;
+    usaMc?: boolean;
+    aPezzo?: boolean;
+    aCorpo?: boolean;
+    prezzoEditabile?: boolean;
+  };
 
-  function renderSezione(titolo: string, lavorazioni: Record<string, Lavorazione>) {
+  function renderSezione(titolo: string, lavorazioni: Record<string, Lavorazione>, sezioneKey: string) {
+    const isAperta = sezioniAperte[sezioneKey];
+    const numSelezionate = Object.keys(lavorazioni).filter(k => selezioni[k]).length;
+
     return (
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          <div className="p-4 sm:p-5 border-b bg-white flex items-center justify-between">
-            <div className="text-sm font-semibold text-slate-900">{titolo}</div>
-            <div className="text-xs text-slate-500">Seleziona le voci necessarie</div>
+      <Card className="shadow-md hover:shadow-lg transition-shadow">
+        <CardHeader 
+          className="cursor-pointer hover:bg-slate-50 transition-colors"
+          onClick={() => toggleSezione(sezioneKey)}
+        >
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-xl">{titolo}</CardTitle>
+              {numSelezionate > 0 && (
+                <Badge className="bg-blue-600">{numSelezionate} selezionate</Badge>
+              )}
+            </div>
+            {isAperta ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </div>
-
-          <div className="p-4 sm:p-5 bg-white space-y-3">
-            {Object.entries(lavorazioni).map(([key, item]) => {
-              const selected = !!selezioni[key];
-              const prezzoMostrato = prezziPersonalizzati[key] ?? item.prezzo;
-
-              return (
-                <div key={key} className="rounded-xl border bg-white">
-                  {/* Riga principale */}
-                  <div className="px-3 sm:px-4 py-3 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Checkbox checked={selected} onCheckedChange={() => toggle(key)} />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <div className="font-medium text-slate-900 truncate">{item.label}</div>
-                          <Badge>{tipoBadge(item)}</Badge>
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          Prezzo di default modificabile per preventivo
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-right shrink-0">
-                      <div className="text-xs text-slate-500">Prezzo</div>
-                      <div className="font-semibold text-slate-900">€ {Number(prezzoMostrato).toLocaleString()}</div>
-                    </div>
-                  </div>
-
-                  {/* Dettagli quando selezionato */}
-                  {selected && (
-                    <div className="px-3 sm:px-4 pb-4 pt-3 border-t bg-slate-50">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {item.usaMqSpecifici && (
-                          <div className="space-y-1">
-                            <div className="text-xs text-slate-600">Mq lavorazione</div>
-                            <Input
-                              type="number"
-                              value={mqLavorazioni[key] ?? 0}
-                              onChange={(e) => cambiaMq(key, Number(e.target.value))}
-                            />
-                          </div>
-                        )}
-
-                        {item.usaMc && (
-                          <>
-                            <div className="space-y-1">
-                              <div className="text-xs text-slate-600">Metri cubi</div>
-                              <Input
-                                type="number"
-                                value={mcLavorazioni[key] ?? 0}
-                                onChange={(e) => cambiaMc(key, Number(e.target.value))}
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <div className="text-xs text-slate-600">Prezzo €/m³</div>
-                              <Input
-                                type="number"
-                                value={prezzoMc[key] ?? item.prezzo}
-                                onChange={(e) => cambiaPrezzoMc(key, Number(e.target.value))}
-                              />
-                            </div>
-                          </>
-                        )}
-
-                        {(item.aPezzo || item.prezzoEditabile) && (
-                          <>
-                            {item.aPezzo && (
-                              <div className="space-y-1">
-                                <div className="text-xs text-slate-600">Quantità</div>
-                                <Input
-                                  type="number"
-                                  value={mqLavorazioni[key] ?? 0}
-                                  onChange={(e) => cambiaMq(key, Number(e.target.value))}
-                                />
-                              </div>
-                            )}
-                            <div className="space-y-1">
-                              <div className="text-xs text-slate-600">Prezzo €</div>
-                              <Input
-                                type="number"
-                                value={prezziPersonalizzati[key] ?? item.prezzo}
-                                onChange={(e) => cambiaPrezzo(key, Number(e.target.value))}
-                              />
-                            </div>
-                          </>
-                        )}
-
-                        {!item.aCorpo && !item.aPezzo && !item.usaMc && !item.prezzoEditabile && (
-                          <div className="space-y-1">
-                            <div className="text-xs text-slate-600">Prezzo €/m²</div>
-                            <Input
-                              type="number"
-                              value={prezziPersonalizzati[key] ?? item.prezzo}
-                              onChange={(e) => cambiaPrezzo(key, Number(e.target.value))}
-                            />
-                          </div>
-                        )}
-
-                        {/* Per le voci a corpo non-editabili, lasciamo comunque un campo prezzo se vuoi */}
-                        {item.aCorpo && !item.prezzoEditabile && (
-                          <div className="space-y-1">
-                            <div className="text-xs text-slate-600">Prezzo €</div>
-                            <Input
-                              type="number"
-                              value={prezziPersonalizzati[key] ?? item.prezzo}
-                              onChange={(e) => cambiaPrezzo(key, Number(e.target.value))}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+        </CardHeader>
+        
+        {isAperta && (
+          <CardContent className="space-y-4 pt-0">
+            {Object.entries(lavorazioni).map(([key, item]) => (
+              <div 
+                key={key} 
+                className={`space-y-3 p-4 rounded-lg border transition-all ${
+                  selezioni[key] 
+                    ? 'border-blue-300 bg-blue-50/50' 
+                    : 'border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Checkbox 
+                    checked={!!selezioni[key]} 
+                    onCheckedChange={() => toggle(key)}
+                    className="data-[state=checked]:bg-blue-600"
+                  />
+                  <span className="font-medium text-slate-900">{item.label}</span>
+                  <span className="text-sm text-slate-500 ml-auto">
+                    €{item.prezzo}
+                    {item.usaMc ? '/m³' : item.aPezzo ? '/pz' : item.aCorpo ? '' : '/m²'}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
+
+                {selezioni[key] && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pl-8">
+                    {item.usaMqSpecifici && (
+                      <div>
+                        <label className="text-sm font-medium text-slate-700 block mb-1">
+                          Mq lavorazione
+                        </label>
+                        <Input 
+                          type="number" 
+                          value={mqLavorazioni[key] ?? 0} 
+                          onChange={(e) => cambiaMq(key, +e.target.value)}
+                          className="border-slate-300"
+                        />
+                      </div>
+                    )}
+
+                    {item.usaMc && (
+                      <>
+                        <div>
+                          <label className="text-sm font-medium text-slate-700 block mb-1">
+                            Metri cubi
+                          </label>
+                          <Input 
+                            type="number" 
+                            value={mcLavorazioni[key] ?? 0} 
+                            onChange={(e) => cambiaMc(key, +e.target.value)}
+                            className="border-slate-300"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-slate-700 block mb-1">
+                            Prezzo €/m³
+                          </label>
+                          <Input 
+                            type="number" 
+                            value={prezzoMc[key] ?? item.prezzo} 
+                            onChange={(e) => cambiaPrezzoMc(key, +e.target.value)}
+                            className="border-slate-300"
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {(item.aPezzo || item.prezzoEditabile) && (
+                      <>
+                        {item.aPezzo && (
+                          <div>
+                            <label className="text-sm font-medium text-slate-700 block mb-1">
+                              Quantità
+                            </label>
+                            <Input 
+                              type="number" 
+                              value={mqLavorazioni[key] ?? 0} 
+                              onChange={(e) => cambiaMq(key, +e.target.value)}
+                              className="border-slate-300"
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <label className="text-sm font-medium text-slate-700 block mb-1">
+                            Prezzo €
+                          </label>
+                          <Input 
+                            type="number" 
+                            value={prezziPersonalizzati[key] ?? item.prezzo} 
+                            onChange={(e) => cambiaPrezzo(key, +e.target.value)}
+                            className="border-slate-300"
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {!item.aCorpo && !item.aPezzo && !item.usaMc && !item.prezzoEditabile && (
+                      <div>
+                        <label className="text-sm font-medium text-slate-700 block mb-1">
+                          Prezzo €/mq
+                        </label>
+                        <Input 
+                          type="number" 
+                          value={prezziPersonalizzati[key] ?? item.prezzo} 
+                          onChange={(e) => cambiaPrezzo(key, +e.target.value)}
+                          className="border-slate-300"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        )}
       </Card>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Area PDF */}
-      <div id="pdf-root" className="mx-auto max-w-5xl p-4 sm:p-6 pb-28 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">Nuovo preventivo</h1>
-            <p className="text-sm text-slate-500">Compila i dati e seleziona le lavorazioni.</p>
-          </div>
-          <Button variant="outline" onClick={tornaIndietro}>
-            ← Torna allo storico
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div id="pdf-root" className="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
+        {/* Header con navigazione */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={tornaIndietro}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Torna allo storico
           </Button>
+          
+          <div className="flex gap-2 flex-wrap">
+            <Button 
+              variant="outline" 
+              onClick={exportPDF}
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Esporta PDF
+            </Button>
+            <Button 
+              onClick={salva}
+              className="gap-2 bg-blue-600 hover:bg-blue-700"
+            >
+              <Save className="w-4 h-4" />
+              Salva preventivo
+            </Button>
+          </div>
         </div>
 
         {/* Dati immobile */}
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <div className="p-4 sm:p-5 border-b bg-white">
-              <SectionHeader title="Dati immobile" subtitle="Questi dati influenzano quantità e coefficienti." />
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <Building2 className="w-6 h-6 text-blue-600" />
+              Dati immobile
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 block mb-2">
+                  Nome cliente
+                </label>
+                <Input 
+                  placeholder="es. Mario Rossi" 
+                  value={cliente} 
+                  onChange={(e) => setCliente(e.target.value)}
+                  className="border-slate-300"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-700 block mb-2">
+                  Superficie (mq)
+                </label>
+                <Input 
+                  type="number" 
+                  placeholder="100" 
+                  value={superficieCasa} 
+                  onChange={(e) => setSuperficieCasa(+e.target.value)}
+                  className="border-slate-300"
+                />
+              </div>
             </div>
 
-            <div className="p-4 sm:p-5 bg-white space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <div className="text-xs text-slate-600">Cliente</div>
-                  <Input placeholder="Nome cliente" value={cliente} onChange={(e) => setCliente(e.target.value)} />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="text-xs text-slate-600">Superficie (m²)</div>
-                  <Input
-                    type="number"
-                    placeholder="Superficie mq"
-                    value={superficieCasa}
-                    onChange={(e) => setSuperficieCasa(Number(e.target.value))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 block mb-2">
+                  Piano
+                </label>
+                <Input 
+                  type="number" 
+                  placeholder="1" 
+                  value={piano} 
+                  onChange={(e) => setPiano(+e.target.value)}
+                  className="border-slate-300"
+                />
+              </div>
+              <div className="flex items-end pb-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox 
+                    checked={ascensore} 
+                    onCheckedChange={(v) => setAscensore(!!v)}
+                    className="data-[state=checked]:bg-blue-600"
                   />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="text-xs text-slate-600">Piano</div>
-                  <Input
-                    type="number"
-                    placeholder="Piano"
-                    value={piano}
-                    onChange={(e) => setPiano(Number(e.target.value))}
+                  <span className="text-sm font-medium text-slate-700">Ascensore presente</span>
+                </label>
+              </div>
+              <div className="flex items-end pb-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox 
+                    checked={accessoStrada} 
+                    onCheckedChange={(v) => setAccessoStrada(!!v)}
+                    className="data-[state=checked]:bg-blue-600"
                   />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="text-xs text-slate-600">Accessibilità</div>
-                  <div className="flex flex-wrap gap-4 pt-2">
-                    <label className="flex items-center gap-2 text-sm text-slate-700">
-                      <Checkbox checked={ascensore} onCheckedChange={(v) => setAscensore(!!v)} /> Ascensore
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-slate-700">
-                      <Checkbox checked={accessoStrada} onCheckedChange={(v) => setAccessoStrada(!!v)} /> Accesso diretto alla strada
-                    </label>
-                  </div>
-                  <div className="text-xs text-slate-500 mt-1">
-                    Coefficienti: no ascensore <Badge>+10%</Badge> sul totale, piani e accesso strada su carico/scarico.
-                  </div>
-                </div>
+                  <span className="text-sm font-medium text-slate-700">Accesso strada</span>
+                </label>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Sezioni */}
-        <div className="space-y-6">
-          {renderSezione("Demolizioni", demolizioni as any)}
-          {renderSezione("Lavorazioni principali", lavorazioniBase as any)}
-          {renderSezione("Voci avanzate", lavorazioniAvanzate as any)}
-        </div>
-      </div>
+        {/* Sezioni lavorazioni */}
+        {renderSezione("Demolizioni", demolizioni, "demolizioni")}
+        {renderSezione("Lavorazioni principali", lavorazioniBase, "lavorazioni")}
+        {renderSezione("Voci avanzate", lavorazioniAvanzate, "avanzate")}
 
-      {/* Totale sticky */}
-      <div className="fixed bottom-0 left-0 right-0 z-20">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 pb-4">
-          <div className="rounded-2xl border bg-white shadow-sm p-4 flex items-center justify-between gap-3">
-            <div>
-              <div className="text-xs text-slate-500">Totale stimato</div>
-              <div className="text-xl sm:text-2xl font-semibold text-slate-900">
-                € {Number(totale).toLocaleString()}
+        {/* Totale fisso in basso */}
+        <div className="sticky bottom-4">
+          <Card className="shadow-2xl border-2 border-blue-200 bg-white">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <Calculator className="w-8 h-8 text-blue-600" />
+                  <div>
+                    <p className="text-sm text-slate-600">Totale preventivo</p>
+                    <strong className="text-3xl font-bold text-blue-600">
+                      € {calcolaTotale().toLocaleString('it-IT', { minimumFractionDigits: 2 })}
+                    </strong>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={exportPDF}
+                    size="lg"
+                    className="gap-2"
+                  >
+                    <Download className="w-5 h-5" />
+                    Esporta PDF
+                  </Button>
+                  <Button 
+                    onClick={salva}
+                    size="lg"
+                    className="gap-2 bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Save className="w-5 h-5" />
+                    Salva preventivo
+                  </Button>
+                </div>
               </div>
-              <div className="text-xs text-slate-500 mt-1">
-                Il totale è una stima: l’impresa può sempre rivedere il prezzo finale.
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={exportPDF}>
-                Esporta PDF
-              </Button>
-              <Button onClick={salva}>Salva preventivo</Button>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
@@ -559,4 +560,3 @@ function EditorPreventivo({
 }
 
 export default dynamic(() => Promise.resolve(App), { ssr: false });
-
